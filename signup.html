@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Join Puddy Pictures Movie Club</title>
+</head>
+<body>
+  <h1>Join the Puddy Pictures Movie Club</h1>
+  <form action="/api/register-user" method="POST">
+    <label>
+      Name:<br>
+      <input name="name" required>
+    </label><br><br>
+    <label>
+      Phone:<br>
+      <input name="phone" placeholder="+15551234567" required>
+    </label><br><br>
+    <label>
+      <input type="checkbox" name="consent" value="yes" required>
+      Yes, I’d like to receive the weekly movie-pick MMS from Puddy Pictures.
+    </label><br><br>
+    <button type="submit">Join Movie Club</button>
+  </form>
+</body>
+</html>

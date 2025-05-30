@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Puddy Pictures Random Picker</title>
+  <style>
+    /* Global reset */
+    *, *::before, *::after { box-sizing: border-box; }
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      font-family: Arial, sans-serif;
+      font-size: 24px;
+      overflow: hidden;
+    }
+    #container { display: flex; height: 100vh; }
+    /* Picker panel (left) */
+    #picker-panel {
+      flex: 1;
+      background: #f9f9f9;
+      border-right: 2px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 60px;
+      position: relative;
+    }
+    #picker-panel h1 {
+      font-size: 48px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .wheel-container {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    .wheel {
+      font-size: 48px;
+      padding: 20px;
+      width: 400px;
+      height: 100px;
+      text-align: center;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background: white;
+    }
+    #spin-results {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 28px;
+      color: #333;
+      text-align: center;
+      width: 80%;
+      max-width: 300px;
+    }
+    #start-btn, #reset-btn {
+      font-size: 28px;
+      padding: 12px 24px;
+      background: #4a90e2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+    }
+    #reset-btn { display: none; }
+    #start-btn:hover, #reset-btn:hover { background: #357ab8; }
+    /* Contacts panel */
+    #contacts-panel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 300px; /* widened to fit contacts on one line */
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    #contacts-panel h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+    #contacts-panel input {
+      width: 100%;
+      margin-bottom: 8px;
+      font-size: 16px;
+      padding: 5px;
+    }
+    #contacts-panel button {
+      width: 100%;
+      font-size: 16px;
+      padding: 8px;
+      margin-bottom: 8px;
+      background: #4a90e2;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #contacts-panel button:hover { background: #357ab8; }
+    #contact-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 120px;
+      overflow-y: auto;
+      font-size: 16px;
+    }
+    #contact-list li {
+      display: grid;
+      grid-template-columns: 30px 1fr 1fr auto; /* checkbox, name, number, remove button */
+      column-gap: 8px;
+      align-items: center;
+      justify-items: start; /* left align each column */
+      margin-bottom: 4px;
+    }
+    #contact-list li input[type="checkbox"] {
+      margin-right: 8px;
+    }
+    #contact-list li label {
+      margin: 0;
+    }
+    
+    
+    /* Result panel (right) */
+    #result-panel {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background: #fff;
+      padding: 40px 20px;
+    }
+    #result-panel h1 {
+      font-size: 48px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    #result-wrapper {
+      display: flex;
+      flex: 1;
+      width: 100%;
+      justify-content: space-evenly;
+      align-items: center;
+    }
+    #poster-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #poster-container img {
+      width: 100%;
+      height: auto;
+      max-width: 700px;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    #info-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 0 20px;
+    }
+    #info-container h2 {
+      font-size: 36px;
+      margin-bottom: 20px;
+      text-align: center;
+      width: 100%;
+    }
+    #info-container p {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      grid-column-gap: 20px;
+      font-size: 24px;
+      margin: 10px 0;
+      align-items: start;
+      width: 100%;
+    }
+    #info-container p strong {
+      white-space: nowrap;
+      font-weight: bold;
+    }
+    #reset-btn-result {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      font-size: 28px;
+      padding: 12px 24px;
+      background: #4a90e2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+      z-index: 10;
+    }
+    #reset-btn-result:hover { background: #357ab8; }
+  </style>
+  <!-- html2canvas for screenshot capture -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+  <div id="container">
+    <!-- Picker Panel -->
+    <div id="picker-panel">
+      <h1>Puddy Pictures Picker</h1>
+      <button id="start-btn">Start Random Movie</button>
+      <button id="reset-btn">Reset</button>
+      <div class="wheel-container" id="container-region"><select id="region-select" class="wheel"></select></div>
+      <div class="wheel-container" id="container-genre"><select id="genre-select" class="wheel"></select></div>
+      <div class="wheel-container" id="container-decade"><select id="decade-select" class="wheel"></select></div>
+      <div class="wheel-container" id="container-budget"><select id="budget-select" class="wheel"></select></div>
+      <div id="spin-results"></div>
+      <!-- Contacts Panel -->
+      <div id="contacts-panel">
+        <h3>Contacts</h3>
+        <input type="text" id="contact-name" placeholder="Name" />
+        <input type="text" id="contact-phone" placeholder="Phone e.g. +15551234567" />
+        <button id="add-contact-btn">Add Contact</button>
+        <ul id="contact-list"></ul>
+      </div>
+    </div>
+    <!-- Result Panel -->
+    <div id="result-panel">
+      <h1>Puddy Pictures Picker</h1>
+      <div id="result-wrapper">
+        <div id="poster-container"></div>
+        <div id="info-container"></div>
+      </div>
+      <button id="reset-btn-result">Reset</button>
+    </div>
+  </div>
+
+  <script>
+    const wheels = {
+      region: ['North America','Europe','Asia','Latin America','Africa','Oceania'],
+      genre: ['Drama','Comedy','Horror','Action','Sci-Fi','Romance','Thriller','Animation','Documentary'],
+      decade: ['1950s','1960s','1970s','1980s','1990s','2000s','2010s','2020s'],
+      budget: ['Micro-budget','Indie','Studio','Blockbuster']
+    };
+    const order = ['region','genre','decade','budget'];
+    const selections = {};
+    // Load and render saved contacts
+    let contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+    const contactListEl = document.getElementById('contact-list');
+    function renderContacts() {
+      contactListEl.innerHTML = '';
+      contacts.forEach((c, i) => {
+        const li = document.createElement('li');
+        // checkbox column
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `contact-${i}`;
+        checkbox.value = c.phone;
+        // name column
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'contact-name';
+        nameSpan.textContent = c.name;
+        // phone column
+        const phoneSpan = document.createElement('span');
+        phoneSpan.className = 'contact-phone';
+        phoneSpan.textContent = c.phone;
+        // assemble row
+        li.appendChild(checkbox);
+        li.appendChild(nameSpan);
+        li.appendChild(phoneSpan);
+        // remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = 'Remove';
+        removeBtn.className = 'remove-contact-btn';
+        removeBtn.addEventListener('click', () => {
+          contacts.splice(i, 1);
+          localStorage.setItem('contacts', JSON.stringify(contacts));
+          renderContacts();
+        });
+        li.appendChild(removeBtn);
+        contactListEl.appendChild(li);
+      });
+    }
+    renderContacts();
+    // Add new contacts
+    document.getElementById('add-contact-btn').addEventListener('click', () => {
+      const name = document.getElementById('contact-name').value.trim();
+      const phone = document.getElementById('contact-phone').value.trim();
+      if (!name || !phone) return alert('Both name and phone required');
+      contacts.push({ name, phone });
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+      renderContacts();
+      document.getElementById('contact-name').value = '';
+      document.getElementById('contact-phone').value = '';
+    });
+
+    order.forEach(type => {
+      const sel = document.getElementById(`${type}-select`);
+      wheels[type].forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt;
+        o.textContent = opt;
+        sel.appendChild(o);
+      });
+    });
+
+    function showWheel(type) { document.getElementById(`container-${type}`).style.opacity = '1'; }
+    function hideWheel(type) { document.getElementById(`container-${type}`).style.opacity = '0'; }
+    function spinWheel(type) {
+      return new Promise(resolve => {
+        const sel = document.getElementById(`${type}-select`);
+        let idx = 0;
+        const interval = setInterval(() => sel.selectedIndex = idx++ % wheels[type].length, 100);
+        setTimeout(() => {
+          clearInterval(interval);
+          const choice = wheels[type][Math.floor(Math.random()*wheels[type].length)];
+          sel.value = choice;
+          selections[type] = choice;
+          resolve();
+        }, 2000);
+      });
+    }
+
+    async function runSequence() {
+      document.getElementById('start-btn').style.display = 'none';
+      document.getElementById('reset-btn').style.display = 'none';
+      document.getElementById('reset-btn-result').style.display = 'none';
+      document.getElementById('spin-results').innerHTML = '';
+      await new Promise(r => setTimeout(r, 2000));
+      for (const type of order) {
+        showWheel(type);
+        await spinWheel(type);
+        hideWheel(type);
+        const p = document.createElement('p');
+        p.textContent = `${type.charAt(0).toUpperCase()+type.slice(1)}: ${selections[type]}`;
+        document.getElementById('spin-results').appendChild(p);
+      }
+      const res = await fetch('/api/generate-movie', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(selections)
+      });
+      const data = await res.json();
+      displayResult(data);
+    }
+
+    function displayResult(data) {
+      document.getElementById('picker-panel').style.display = 'none';
+      document.getElementById('result-panel').style.display = 'flex';
+      document.getElementById('poster-container').innerHTML = `<img src="${data.poster_url}" alt="${data.title}"/>`;
+      document.getElementById('info-container').innerHTML = `
+        <h2>${data.title} (${data.year})</h2>
+        <p><strong>Description:</strong> ${data.description}</p>
+        <p><strong>Director:</strong> ${data.director}</p>
+        <p><strong>Country:</strong> ${data.country}</p>
+        <p><strong>Genre:</strong> ${selections.genre}</p>
+        <p><strong>Budget:</strong> ${selections.budget}</p>
+        <p><strong>Where to watch:</strong> ${data.watch_info}</p>
+      `;
+      document.getElementById('reset-btn-result').style.display = 'block';
+      if (contacts.length) {
+        // only send to selected contacts
+        const selectedPhones = Array.from(
+          document.querySelectorAll('#contact-list input[type="checkbox"]:checked')
+        ).map(cb => cb.value);
+        if (selectedPhones.length) {
+          html2canvas(document.getElementById('result-panel')).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            fetch('/api/send-results', {
+              method: 'POST',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ contacts: selectedPhones, image: imgData, posterUrl: data.poster_url })
+            });
+          });
+        }
+      }
+    }
+
+    function resetAll() {
+      order.forEach(type => delete selections[type]);
+      document.getElementById('picker-panel').style.display = 'flex';
+      document.getElementById('start-btn').style.display = 'block';
+      document.getElementById('reset-btn').style.display = 'none';
+      document.querySelectorAll('.wheel-container').forEach(c => c.style.opacity = '0');
+      document.getElementById('result-panel').style.display = 'none';
+      document.getElementById('poster-container').innerHTML = '';
+      document.getElementById('info-container').innerHTML = '';
+    }
+
+    document.getElementById('start-btn').addEventListener('click', runSequence);
+    document.getElementById('reset-btn').addEventListener('click', resetAll);
+    document.getElementById('reset-btn-result').addEventListener('click', resetAll);
+  </script>
