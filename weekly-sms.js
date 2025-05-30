@@ -14,6 +14,9 @@ const OpenAI = require('openai');
 const fs = require('fs');
 const path = require('path');
 
+// Base URL for your movie API (deployed on Railway)
+const BASE_URL = process.env.MOVIE_API_URL || 'http://localhost:3000';
+
 // Path to stored registrations (updated by /api/register-user)
 const registrationsFile = path.join(__dirname, 'registrations.json');
 
@@ -40,11 +43,11 @@ if (fs.existsSync(registrationsFile)) {
   process.exit(1);
 }
 
-// Call server to generate a movie pick
+// Call deployed server to generate a movie pick
 async function generateMovie() {
   try {
     const response = await axios.post(
-      'http://localhost:3000/api/generate-movie',
+      `${BASE_URL}/api/generate-movie`,
       {} // empty body triggers random fallback
     );
     return response.data;

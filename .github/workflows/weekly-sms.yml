@@ -35,3 +35,4 @@ jobs:
         SMTP_PASS:            ${{ secrets.SMTP_PASS }}
         CLUB_MEMBERS:         ${{ secrets.CLUB_MEMBERS }}
         OMDB_API_KEY:         ${{ secrets.OMDB_API_KEY }}
+           MOVIE_API_URL:     ${{ secrets.MOVIE_API_URL }}
