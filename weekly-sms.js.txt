@@ -1,0 +1,94 @@
+// weekly-sms.js
+require('dotenv').config();
+const axios = require('axios');
+const twilio = require('twilio');
+const OpenAI = require('openai');
+const fs = require('fs');
+const path = require('path');
+
+const registrationsFile = path.join(__dirname, 'registrations.json');
+const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const twilioFrom = process.env.TWILIO_PHONE_NUMBER;
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+// Load registered users
+let registrations = [];
+if (fs.existsSync(registrationsFile)) {
+  registrations = JSON.parse(fs.readFileSync(registrationsFile, 'utf-8'));
+} else {
+  console.error('No registrations file found!');
+  process.exit(1);
+}
+
+// Call your existing movie generator
+async function generateMovie() {
+  try {
+    const response = await axios.post('http://localhost:3000/api/generate-movie', {});
+    return response.data;
+  } catch (error) {
+    console.error('Error generating movie:', error.response ? error.response.data : error.message);
+    process.exit(1);
+  }
+}
+
+// Generate an AI-powered intro
+async function generateIntroAI(movie) {
+  const prompt = `
+Create a short, engaging, and fun introduction (1-2 sentences) for a movie night announcement text message.
+Use a friendly tone and highlight the genre, region, and overall vibe of the movie.
+Here are the movie details:
+Title: ${movie.title}
+Genre: ${movie.genre}
+Region: ${movie.region}
+Release Year: ${movie.release_year}
+`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      messages: [
+        { role: "system", content: "You are a witty and creative movie club announcer." },
+        { role: "user", content: prompt }
+      ],
+      model: "gpt-4o"
+    });
+    const aiIntro = response.choices[0].message.content.trim();
+    return aiIntro;
+  } catch (error) {
+    console.error('Error generating AI intro:', error.response ? error.response.data : error.message);
+    process.exit(1);
+  }
+}
+
+// Main function to send weekly SMS
+async function sendWeeklySMS() {
+  const movie = await generateMovie();
+  const intro = await generateIntroAI(movie);
+
+  for (const user of registrations) {
+    const body = `${intro}\nWatch: ${movie.watch_info}`;
+    const msgOptions = {
+      from: twilioFrom,
+      to: user.phone,
+      body: body
+    };
+
+    if (movie.poster_url && movie.poster_url.startsWith('https://')) {
+      msgOptions.mediaUrl = [movie.poster_url];
+    }
+
+    try {
+      await twilioClient.messages.create(msgOptions);
+      console.log(`✅ Sent to ${user.name} (${user.phone})`);
+    } catch (err) {
+      console.error(`❌ Error sending to ${user.phone}:`, err.message);
+    }
+  }
+
+  console.log('🎉 All weekly picks sent!');
+}
+
+sendWeeklySMS();

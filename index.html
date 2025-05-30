@@ -1,3 +1,18 @@
+<!--
+Project Rules:
+1. Do not change working code unless explicitly instructed.
+2. Use modular design to isolate new features.
+3. Save known-good checkpoints before making changes.
+4. Provide diffs (only changed/added lines) when possible instead of full rewrites.
+5. Help verify key features still work, optionally with tests or manual steps.
+
+Verification Steps After Updates:
+- All requested changes are correctly applied.
+- No remnants of previous versions remain.
+- Key features still work, especially:
+  - Manual tag input and entry
+  - CSV file upload and parsing
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -268,24 +283,19 @@
       contactListEl.innerHTML = '';
       contacts.forEach((c, i) => {
         const li = document.createElement('li');
-        // checkbox column
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.id = `contact-${i}`;
         checkbox.value = c.phone;
-        // name column
         const nameSpan = document.createElement('span');
         nameSpan.className = 'contact-name';
         nameSpan.textContent = c.name;
-        // phone column
         const phoneSpan = document.createElement('span');
         phoneSpan.className = 'contact-phone';
         phoneSpan.textContent = c.phone;
-        // assemble row
         li.appendChild(checkbox);
         li.appendChild(nameSpan);
         li.appendChild(phoneSpan);
-        // remove button
         const removeBtn = document.createElement('button');
         removeBtn.textContent = 'Remove';
         removeBtn.className = 'remove-contact-btn';
@@ -299,7 +309,6 @@
       });
     }
     renderContacts();
-    // Add new contacts
     document.getElementById('add-contact-btn').addEventListener('click', () => {
       const name = document.getElementById('contact-name').value.trim();
       const phone = document.getElementById('contact-phone').value.trim();
@@ -365,7 +374,7 @@
       document.getElementById('result-panel').style.display = 'flex';
       document.getElementById('poster-container').innerHTML = `<img src="${data.poster_url}" alt="${data.title}"/>`;
       document.getElementById('info-container').innerHTML = `
-        <h2>${data.title} (${data.year})</h2>
+        <h2>${data.title} (${data.release_year})</h2>
         <p><strong>Description:</strong> ${data.description}</p>
         <p><strong>Director:</strong> ${data.director}</p>
         <p><strong>Country:</strong> ${data.country}</p>
@@ -375,7 +384,6 @@
       `;
       document.getElementById('reset-btn-result').style.display = 'block';
       if (contacts.length) {
-        // only send to selected contacts
         const selectedPhones = Array.from(
           document.querySelectorAll('#contact-list input[type="checkbox"]:checked')
         ).map(cb => cb.value);
@@ -407,3 +415,5 @@
     document.getElementById('reset-btn').addEventListener('click', resetAll);
     document.getElementById('reset-btn-result').addEventListener('click', resetAll);
   </script>
+</body>
+</html>
