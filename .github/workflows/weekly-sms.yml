@@ -1,0 +1,37 @@
+name: Weekly Movie-Pick SMS
+
+on:
+  schedule:
+    # Every Monday at 12:00 UTC (adjust as you like)
+    - cron: '0 12 * * MON'
+  workflow_dispatch:   # lets you run it manually from GitHub
+
+jobs:
+  send_sms:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Send weekly SMS
+      run: npm run weekly-sms
+      env:
+        OPENAI_API_KEY:       ${{ secrets.OPENAI_API_KEY }}
+        TWILIO_ACCOUNT_SID:   ${{ secrets.TWILIO_ACCOUNT_SID }}
+        TWILIO_AUTH_TOKEN:    ${{ secrets.TWILIO_AUTH_TOKEN }}
+        TWILIO_PHONE_NUMBER:  ${{ secrets.TWILIO_PHONE_NUMBER }}
+        SMTP_HOST:            ${{ secrets.SMTP_HOST }}
+        SMTP_PORT:            ${{ secrets.SMTP_PORT }}
+        SMTP_USER:            ${{ secrets.SMTP_USER }}
+        SMTP_PASS:            ${{ secrets.SMTP_PASS }}
+        CLUB_MEMBERS:         ${{ secrets.CLUB_MEMBERS }}
+        OMDB_API_KEY:         ${{ secrets.OMDB_API_KEY }}
