@@ -77,6 +77,15 @@ app.post('/api/register-user', (req, res) => {
   return res.redirect('/signup-success.html');
 });
 
+// ← ADDED: Return the current registrations array to callers (e.g., weekly-sms job)
+app.get('/api/contacts', (_req, res) => {
+  let registrations = [];
+  if (fs.existsSync(registrationsFile)) {
+    registrations = JSON.parse(fs.readFileSync(registrationsFile, 'utf-8'));
+  }
+  res.json(registrations);
+});
+
 // Utility: record spin video using Puppeteer + FFmpeg
 async function recordSpinVideo(selections, outputPath) {
   const initialDelay = 2000;
@@ -183,7 +192,7 @@ app.post('/api/generate-movie', async (req, res) => {
     `- Genre: ${genre}\n` +
     `- Decade: ${decade}\n` +
     `- Budget: ${budgetRanges[budget]}\n\n` +
-    `Reply with a JSON object containing:\n{\n  \"title\": string,\n  \"year\": string,\n  \"country\": string,\n  \"director\": string,\n  \"description\": string,\n  \"watch_info\": string\n}\n\nReturn only valid JSON.`;
+    `Reply with a JSON object containing:\n{\n  "title": string,\n  "year": string,\n  "country": string,\n  "director": string,\n  "description": string,\n  "watch_info": string\n}\n\nReturn only valid JSON.`;
 
   try {
     let movieInfo;
