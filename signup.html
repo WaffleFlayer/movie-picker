@@ -1,32 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Join Puddy Pictures Movie Club</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 40px; text-align: center; }
-    form { display: inline-block; text-align: left; max-width: 400px; width: 100%; }
-    label { display: block; margin-bottom: 16px; font-size: 18px; }
-    input[type="text"], input[type="tel"] { width: 100%; padding: 8px; font-size: 16px; box-sizing: border-box; }
-    button { font-size: 18px; padding: 10px 20px; cursor: pointer; }
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 40px; 
+      text-align: center; 
+    }
+    form { 
+      display: inline-block; 
+      text-align: left; 
+      max-width: 400px; 
+      width: 100%; 
+    }
+    label { 
+      display: block; 
+      margin-bottom: 16px; 
+      font-size: 18px; 
+    }
+    input[type="text"], input[type="tel"] { 
+      width: 100%; 
+      padding: 8px; 
+      font-size: 16px; 
+      box-sizing: border-box; 
+    }
+    button { 
+      font-size: 18px; 
+      padding: 10px 20px; 
+      cursor: pointer; 
+    }
+    .cta-text {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
   <h1>Join the Puddy Pictures Movie Club</h1>
   <form action="/api/register-user" method="POST">
     <label>
-      Name:<br>
-      <input type="text" name="name" required>
+      Name:<br />
+      <input type="text" name="name" required />
     </label>
     <label>
-      Phone:<br>
-      <input type="tel" name="phone" placeholder="+15551234567" required>
+      Phone:<br />
+      <input type="tel" name="phone" placeholder="+15551234567" required />
     </label>
+
+    <!-- Revised CTA block: -->
+    <div class="cta-text">
+      <strong>Puddy Pictures Movie Club Opt‐In:</strong><br/>
+      By checking this box, you agree to receive a weekly MMS (every Thursday)  
+      from <strong>Puddy Pictures Movie Club</strong> that contains our “Movie of the Week”  
+      poster image and streaming information. Msg & Data Rates May Apply.  
+      Reply <strong>STOP</strong> at any time to unsubscribe.
+    </div>
     <label>
-      <input type="checkbox" name="consent" value="yes" required>
-      Yes, I’d like to receive the weekly movie-pick MMS from Puddy Pictures.
+      <input type="checkbox" name="consent" value="yes" required />
+      Yes, I’d like to receive the weekly Movie-of-the-Week MMS from Puddy Pictures Movie Club.
     </label>
+
     <button type="submit">Join Movie Club</button>
   </form>
 </body>
