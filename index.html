@@ -27,26 +27,33 @@ Verification Steps After Updates:
       padding: 0;
       height: 100%;
       width: 100%;
-      font-family: Arial, sans-serif;
+      font-family: 'Montserrat', Arial, sans-serif;
       font-size: 24px;
       overflow: hidden;
+      background: linear-gradient(135deg, #232526 0%, #414345 100%);
+      color: #f5f5f5;
     }
     #container { display: flex; height: 100vh; }
     /* Picker panel (left) */
     #picker-panel {
       flex: 1;
-      background: #f9f9f9;
-      border-right: 2px solid #ddd;
+      background: rgba(255,255,255,0.10);
+      border-right: 2px solid #2d2d2d;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding-top: 60px;
       position: relative;
+      box-shadow: 2px 0 16px 0 rgba(0,0,0,0.08);
     }
-    #picker-panel h1 {
-      font-size: 48px;
+    #picker-panel h1, #result-panel h1 {
+      font-family: 'Montserrat', Arial, sans-serif;
+      font-size: 54px;
       margin-bottom: 40px;
       text-align: center;
+      color: #ffb347;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 8px #222;
     }
     .wheel-container {
       position: absolute;
@@ -159,8 +166,9 @@ Verification Steps After Updates:
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      background: #fff;
+      background: rgba(30,30,30,0.95);
       padding: 40px 20px;
+      color: #f5f5f5;
     }
     #result-panel h1 {
       font-size: 48px;
@@ -231,7 +239,32 @@ Verification Steps After Updates:
       z-index: 10;
     }
     #reset-btn-result:hover { background: #357ab8; }
+    /* Footer */
+    footer {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      background: rgba(30,30,30,0.95);
+      border-top: 1px solid #222;
+      text-align: center;
+      padding: 12px 0;
+      font-size: 18px;
+      z-index: 1000;
+      color: #aaa;
+    }
+    footer a {
+      color: #ffb347;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    footer a:hover {
+      text-decoration: underline;
+      color: #fffbe7;
+    }
   </style>
+  <!-- Google Fonts: Montserrat -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
   <!-- html2canvas for screenshot capture -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -247,14 +280,6 @@ Verification Steps After Updates:
       <div class="wheel-container" id="container-decade"><select id="decade-select" class="wheel"></select></div>
       <div class="wheel-container" id="container-budget"><select id="budget-select" class="wheel"></select></div>
       <div id="spin-results"></div>
-      <!-- Contacts Panel -->
-      <div id="contacts-panel">
-        <h3>Contacts</h3>
-        <input type="text" id="contact-name" placeholder="Name" />
-        <input type="text" id="contact-phone" placeholder="Phone e.g. +15551234567" />
-        <button id="add-contact-btn">Add Contact</button>
-        <ul id="contact-list"></ul>
-      </div>
     </div>
     <!-- Result Panel -->
     <div id="result-panel">
@@ -267,6 +292,11 @@ Verification Steps After Updates:
     </div>
   </div>
 
+  <footer>
+    <a href="privacy.html">Privacy Policy</a> |
+    <a href="signup.html">Sign Up</a>
+  </footer>
+
   <script>
     const wheels = {
       region: ['North America','Europe','Asia','Latin America','Africa','Oceania'],
@@ -276,49 +306,6 @@ Verification Steps After Updates:
     };
     const order = ['region','genre','decade','budget'];
     const selections = {};
-    // Load and render saved contacts
-    let contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-    const contactListEl = document.getElementById('contact-list');
-    function renderContacts() {
-      contactListEl.innerHTML = '';
-      contacts.forEach((c, i) => {
-        const li = document.createElement('li');
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = `contact-${i}`;
-        checkbox.value = c.phone;
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'contact-name';
-        nameSpan.textContent = c.name;
-        const phoneSpan = document.createElement('span');
-        phoneSpan.className = 'contact-phone';
-        phoneSpan.textContent = c.phone;
-        li.appendChild(checkbox);
-        li.appendChild(nameSpan);
-        li.appendChild(phoneSpan);
-        const removeBtn = document.createElement('button');
-        removeBtn.textContent = 'Remove';
-        removeBtn.className = 'remove-contact-btn';
-        removeBtn.addEventListener('click', () => {
-          contacts.splice(i, 1);
-          localStorage.setItem('contacts', JSON.stringify(contacts));
-          renderContacts();
-        });
-        li.appendChild(removeBtn);
-        contactListEl.appendChild(li);
-      });
-    }
-    renderContacts();
-    document.getElementById('add-contact-btn').addEventListener('click', () => {
-      const name = document.getElementById('contact-name').value.trim();
-      const phone = document.getElementById('contact-phone').value.trim();
-      if (!name || !phone) return alert('Both name and phone required');
-      contacts.push({ name, phone });
-      localStorage.setItem('contacts', JSON.stringify(contacts));
-      renderContacts();
-      document.getElementById('contact-name').value = '';
-      document.getElementById('contact-phone').value = '';
-    });
 
     order.forEach(type => {
       const sel = document.getElementById(`${type}-select`);
@@ -361,12 +348,25 @@ Verification Steps After Updates:
         p.textContent = `${type.charAt(0).toUpperCase()+type.slice(1)}: ${selections[type]}`;
         document.getElementById('spin-results').appendChild(p);
       }
-      const res = await fetch('/api/generate-movie', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(selections)
-      });
-      const data = await res.json();
-      displayResult(data);
+      try {
+        const res = await fetch('/api/generate-movie', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(selections)
+        });
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error('Server error: ' + res.status + ' - ' + errorText);
+        }
+        const data = await res.json();
+        displayResult(data);
+      } catch (err) {
+        document.getElementById('picker-panel').style.display = 'none';
+        document.getElementById('result-panel').style.display = 'flex';
+        document.getElementById('poster-container').innerHTML = '';
+        document.getElementById('info-container').innerHTML = `<h2 style='color:red;'>Error</h2><pre>${err.message}</pre>`;
+        document.getElementById('reset-btn-result').style.display = 'block';
+        console.error('Error in runSequence:', err);
+      }
     }
 
     function displayResult(data) {
@@ -383,21 +383,6 @@ Verification Steps After Updates:
         <p><strong>Where to watch:</strong> ${data.watch_info}</p>
       `;
       document.getElementById('reset-btn-result').style.display = 'block';
-      if (contacts.length) {
-        const selectedPhones = Array.from(
-          document.querySelectorAll('#contact-list input[type="checkbox"]:checked')
-        ).map(cb => cb.value);
-        if (selectedPhones.length) {
-          html2canvas(document.getElementById('result-panel')).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            fetch('/api/send-results', {
-              method: 'POST',
-              headers: {'Content-Type':'application/json'},
-              body: JSON.stringify({ contacts: selectedPhones, image: imgData, posterUrl: data.poster_url })
-            });
-          });
-        }
-      }
     }
 
     function resetAll() {

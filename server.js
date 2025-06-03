@@ -25,6 +25,8 @@ const registrationsFile = path.join(__dirname, 'registrations.json');
 app.use(express.json({ limit: '10mb' }));
 // Parse URL-encoded form bodies (for signup.html)
 app.use(express.urlencoded({ extended: true }));
+// Serve static files (e.g., index.html)
+app.use(express.static(__dirname));
 
 // Initialize OpenAI client
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -45,7 +47,9 @@ const twilioFrom = process.env.TWILIO_PHONE_NUMBER;
 
 // Serve frontend pages
 app.get('/app', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, 'signup.html')));
 app.get('/signup-success.html', (req, res) => res.sendFile(path.join(__dirname, 'signup-success.html')));
 
@@ -169,6 +173,7 @@ const decadeList = ['1950s','1960s','1970s','1980s','1990s','2000s','2010s','202
 
 // Main movie generation endpoint
 app.post('/api/generate-movie', async (req, res) => {
+  console.log('Received /api/generate-movie', req.body);
   let { region, genre, decade, budget } = req.body;
 
   // Fallback to random if missing
